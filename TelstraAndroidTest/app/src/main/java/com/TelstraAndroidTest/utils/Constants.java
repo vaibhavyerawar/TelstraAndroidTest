@@ -21,6 +21,7 @@ public class Constants {
     public final static String ERROR_FAIL_TO_GET_INFO = "Failed to get information.";
 
     /* Network error messages */
+    public final static String NETWORK_CONNECTION_ERROR_MSG = "Check Network Connectivity.";
     public static final String BAD_REQUEST_MSG = "Unable to process your request.";
     public static final String UNAUTHORIZED_MSG = "User is not authorized to access resources.";
     public static final String INTERNAL_SERVER_ERROR_MSG = "Unable to process your request.";
