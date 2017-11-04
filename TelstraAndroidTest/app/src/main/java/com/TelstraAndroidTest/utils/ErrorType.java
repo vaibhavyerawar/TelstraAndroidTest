@@ -1,7 +1,7 @@
 package com.TelstraAndroidTest.utils;
 
 /**
- * Enum constant for server response error codes.
+ * Enum constant for server onSuccess error codes.
  */
 public enum ErrorType {
 

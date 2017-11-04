@@ -1,8 +1,7 @@
 package com.TelstraAndroidTest.controller;
 
-import android.util.Log;
-
 import com.TelstraAndroidTest.api.API;
+import com.TelstraAndroidTest.handler.IControllerCallbackHandler;
 import com.TelstraAndroidTest.service.NetworkManager;
 import com.TelstraAndroidTest.utils.Constants;
 import com.TelstraAndroidTest.utils.ErrorType;
@@ -25,21 +24,45 @@ import static com.squareup.okhttp.internal.Util.UTF_8;
  * A parent class for controller classes in application.
  */
 
-public abstract class BaseController<T> {
+public abstract class BaseController {
 
-    private T t;
+    /**
+     * Reference to the class for JSON parser for binding to class object.
+     */
+    protected Class classRef;
+
+    /**
+     * Instance of NetworkManager class for performing network operations.
+     */
     private NetworkManager mNetworkManagerInstance;
+
+    /**
+     * Reference of Retrofit REST call API interface.
+     */
     protected API mApi;
 
-    public BaseController(){
+    /**
+     * Reference to Controller callback handler interface.
+     */
+    protected IControllerCallbackHandler mControllerCallbackHandlerInstance;
 
+    /**
+     * Retrofit network callback interface reference.
+     */
+    protected Callback callback;
+
+    public BaseController(){
         mNetworkManagerInstance = NetworkManager.getInstance();
         mApi = mNetworkManagerInstance.getAPI();
+        initNetworkCall();
     }
 
-    protected Callback makeNetworkCall() {
+    /**
+     * Method to initialise Retrofit network callback for getting onSuccess of network calls.
+     */
+    private void initNetworkCall() {
 
-        Callback callback = new Callback() {
+        callback = new Callback() {
 
             @Override
             public void success(Object o, Response response) {
@@ -47,7 +70,7 @@ public abstract class BaseController<T> {
                 if (processedResponse != null) {
 
                    Object parsedObject = parseJSONResponse(processedResponse);
-                   onSuccess(parsedObject);
+                    mControllerCallbackHandlerInstance.onSuccess(parsedObject);
                 }
             }
 
@@ -56,10 +79,13 @@ public abstract class BaseController<T> {
                 verifyErrorCause(error);
             }
         };
-
-        return callback;
     }
 
+    /**
+     * Method to read Retrofit onSuccess and get the data for parsing.
+     * @param response - Network call execution onSuccess from Retrofit.
+     * @return - Extracted data from onSuccess in string format for paring.
+     */
     private String readResponse(Response response) {
 
         try {
@@ -71,6 +97,11 @@ public abstract class BaseController<T> {
         }
     }
 
+    /**
+     * Method to convert data inputstream to string format.
+     * @param responseStream - Data inputstream from network call onSuccess.
+     * @return - String read from inputstream.
+     */
     private String readInputStream(InputStream responseStream) {
         BufferedReader bufferedReader = null;
         try {
@@ -83,7 +114,7 @@ public abstract class BaseController<T> {
             }
             return stringBuilder.toString();
         } catch (Exception e) {
-            onFailure(Constants.ERROR_FAIL_TO_GET_INFO);
+            mControllerCallbackHandlerInstance.onFailure(Constants.ERROR_FAIL_TO_GET_INFO);
             return null;
         } finally {
             if (bufferedReader != null) {
@@ -91,19 +122,28 @@ public abstract class BaseController<T> {
                     bufferedReader.close();
                     responseStream.close();
                 } catch (IOException e) {
-                    onFailure(Constants.ERROR_FAIL_TO_GET_INFO);
+                    mControllerCallbackHandlerInstance.onFailure(Constants.ERROR_FAIL_TO_GET_INFO);
                     return null;
                 }
             }
         }
     }
 
+    /**
+     * Method to parse JSON onSuccess string using GSON parser.
+     * @param jsonResponse - JSON onSuccess string.
+     * @return - Class object from parsed JSON string.
+     */
     private Object parseJSONResponse(String jsonResponse){
 
-       Object object = new Gson().fromJson(jsonResponse, t.getClass());
+       Object object = new Gson().fromJson(jsonResponse, classRef);
        return object;
     }
 
+    /**
+     * Method to verify error code of network call on failure.
+     * @param error - Error object get from Retrofit on failure of network call.
+     */
     private void verifyErrorCause(RetrofitError error) {
         String errorMsg = error.getMessage();
         ErrorType errorType;
@@ -132,9 +172,6 @@ public abstract class BaseController<T> {
                 }
             }
         }
-        onFailure(errorMsg);
+        mControllerCallbackHandlerInstance.onFailure(errorMsg);
     }
-
-    protected abstract <T> void onSuccess(T response);
-    protected abstract void onFailure(String errorMsg);
 }
