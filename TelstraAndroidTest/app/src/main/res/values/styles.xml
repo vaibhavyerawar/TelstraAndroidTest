@@ -5,4 +5,18 @@
         <!-- Customize your theme here. -->
     </style>
 
+    <!-- Splash activity theme. -->
+    <style name="ThemeNoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
+    </style>
+
+    <!-- Fact list item title theme. -->
+    <style name="TitleStyle" parent="Base.TextAppearance.AppCompat.Headline">
+        <item name="android:textColor">@android:color/holo_blue_bright</item>
+    </style>
+
+    <!-- Fact list item description theme. -->
+    <style name="DescriptionStyle" parent="Base.TextAppearance.AppCompat.Small">
+        <item name="android:textColor">@android:color/black</item>
+    </style>
+
 </resources>
